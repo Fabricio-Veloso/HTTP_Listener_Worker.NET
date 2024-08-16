@@ -1,18 +1,22 @@
-using App.WindowsService;
-using Microsoft.Extensions.Logging.Configuration;
-using Microsoft.Extensions.Logging.EventLog;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddWindowsService(options =>
+namespace FileMonitorService
 {
-    options.ServiceName = ".NET Joke Service";
-});
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
+                .UseWindowsService()
+                .ConfigureServices(services =>
+                {
+                    services.AddHostedService<Worker>();
+                });
 
-LoggerProviderOptions.RegisterProviderOptions<
-    EventLogSettings, EventLogLoggerProvider>(builder.Services);
-
-builder.Services.AddSingleton<JokeService>();
-builder.Services.AddHostedService<WindowsBackgroundService>();
-
-IHost host = builder.Build();
-host.Run();
+            IHost host = hostBuilder.Build();
+            host.Run();
+        }
+    }
+}
